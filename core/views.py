@@ -132,7 +132,7 @@ def contact(request):
             subject = form.cleaned_data['subject']
             message = form.cleaned_data['message']
             email = form.cleaned_data['email']
-            recipients = ['rakibul.islam7772588@gmail.com']
+            recipients = ['miclee0312@gmail.com']
             send_mail(subject, message, email, recipients)
             messages.success(request, 'Email successfully sent.')
         else:
