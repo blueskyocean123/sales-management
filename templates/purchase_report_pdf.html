@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMS | Sele Report </title>
+</head>
+<body>
+    <div class="company-info">
+        <div class="">
+            <p>
+                <span style="font-size:16px"><strong>{{ office.name }}</strong></span><br>
+                {{office.email}}<br>
+                {{office.phone}}<br>
+                {{office.address}}<br>
+            </p>
+        </div>
+    </div>
+
+    <hr>
+    <br>
+
+    <div class="report-parameter">
+        <span><strong>Report Parameters</strong></span>
+        <div style="margin-bottom: 10px">
+        {% if searched_for %}
+            {% for key, value in searched_for.items %}
+                <span style="margin-right: 5px"><b>{{key|capfirst}}: </b>{{value}}</span> 
+            {% endfor %}
+        {% endif %}
+        </div>
+    </div>
+
+    <div class="summery">
+        <span class="title"><strong>Report Summary</strong></span>
+        <table>
+            <tbody>
+                <tr>
+                    <td style="width: 10%"><b>Total Items</b></td>
+                    <td>: {{qs.count}}</td>
+                </tr>
+                <tr>
+                    <td style="width: 10%"><b>Total Purchase</b></td>
+                    <td>: {{grand_total_price}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <br>
+
+    <div>
+        <span><strong>Report Table</strong></span>
+        <table style="border-top: border 1px solid #ddd; padding:4px 0 1px 0;">
+            <thead>
+                <tr style="font-wight:bold">
+                    <td><strong>Product</strong></td>
+                    <td><strong>Quantity</strong></td>
+                    <td><strong>Price</strong></td>
+                    <td><strong>Total</strong></td>
+                    <td><strong>Supplier</strong></td>
+                    <td><strong>Chalan</strong></td>
+                    <td><strong>Date</strong></td>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for obj in qs %}
+                <tr>
+                    <td>{{ obj.product_name }}</td>
+                    <td>{{ obj.quantity }}</td>
+                    <td>{{ obj.price }}</td>
+                    <td>{{ obj.total_purchase_price }}</td>
+                    <td>{{ obj.supplier }}</td>
+                    <td>{{ obj.chalan_number }}</td>
+                    <td>{{ obj.date_added|date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

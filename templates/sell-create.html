@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}| {{ title|title }}{% endblock title %}
+
+{% block body %}
+
+<div class="container-fluid" id="createSell">
+
+    <div id="alertBox"></div>
+
+    <!-- Content Row -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">{{ title|title }}</h6>
+        </div>
+        <div class="card-body">
+            <form 
+                id="sell-form" 
+                {% if hasAjax %} 
+                    @submit="formSubmit" 
+                {% endif %} 
+
+                {% if not hasAjax %}
+                    method="POST"
+                    action=""
+                {% endif %}
+                @change="calculateDue" 
+                autocomplete="off"
+            >
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-5">
+                        <div class="form-group">
+                            {{ form.date_added|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="form-group">
+                            {{ form.customer_name|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-lg-2">
+                        <div class="form-group">
+                            {{ form.token_number|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="form-group">
+                            {{ form.product_name|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-lg-2">
+                        <div class="form-group">
+                            {{ form.sack|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-lg-2">
+                        <div class="form-group">
+                            <label for="id_quantity">{{ form.quantity.label }}*</label>
+                            <input 
+                                type="number"
+                                @keyup="calculateTotalPrice()"
+                                class="textinput textInput form-control" 
+                                id="id_quantity"
+                                name="quantity"
+                                value="{% if form.quantity.value %}{{ form.quantity.value }}{% endif %}"
+                                required
+                            >
+                        </div>
+                    </div>
+                    <div class="col-lg-2">
+                        <div class="form-group">
+                            <label for="id_sell_price">{{ form.sell_price.label }}*</label>
+                            <input 
+                                type="text"
+                                class="extinput textInput form-control" 
+                                id="id_sell_price"
+                                name="sell_price"
+                                placeholder="Tk"
+                                @keyup="calculateTotalPrice()"
+                                value="{% if form.sell_price.value %}{{ form.sell_price.value }}{% endif %}"
+                                required
+                            >
+                            <small v-if="totalAmount">Total: [[ totalAmount ]]</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3">
+                        <div class="form-group">
+                            <div id="div_id_paid_amount" class="form-group">
+                                <label for="id_paid_amount" class=" requiredField"> {{form.paid_amount.label}}<span class="asteriskField">*</span></label>
+                                <div class="">
+                                    <input 
+                                        @keyup="calculateDue()" 
+                                        type="text" 
+                                        name="paid_amount" 
+                                        class="textinput textInput form-control" 
+                                        id="id_paid_amount"
+                                        placeholder="Taka"
+                                        value="{% if form.paid_amount.value %}{{ form.paid_amount.value }}{% endif %}"
+                                        required=""
+                                    >
+                                    <small v-if="dueAmount" class="text-danger">Due: [[dueAmount]]</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="buttons-right">
+                    <button class="btn btn-primary mr-1" type="submit">Submit</button>
+                    <a href="{% url 'sell-list' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+{% endblock body %}
+
+
+
+{% block script %}
+
+<script type="text/javascript">
+
+const createSell = {
+    data(){
+        return{
+            dueAmount: '',
+            totalAmount: '',
+        }
+    },
+    methods: {
+        calculateTotalPrice(){
+            var quantity = document.getElementById('id_quantity').value
+            var price = document.getElementById('id_sell_price').value
+            if (quantity.length > 0 && quantity > 0 && price.length > 0 && price > 0){
+                total = quantity * price
+                this.totalAmount = total
+            }else{
+                this.totalAmount = '';
+            }
+        },
+        calculateDue(){
+            var paid = document.getElementById('id_paid_amount').value
+            if (paid.length > 0 && paid >=0){
+                var sellprice = document.getElementById('id_sell_price').value
+                var quantity = document.getElementById('id_quantity').value
+                var totalAmount = (sellprice * quantity)
+                var due = totalAmount - paid
+                this.dueAmount = due
+            }else{
+                this.dueAmount = '';
+            }
+        },
+
+        {% if hasAjax %}
+
+        formSubmit(e){
+            e.preventDefault();
+
+            const date = document.getElementById('id_date_added')
+            const customer_name = document.getElementById('id_customer_name')
+            const token_number = document.getElementById('id_token_number')
+            const product_name = document.getElementById('id_product_name')
+            const sack = document.getElementById('id_sack')
+            const quantity = document.getElementById('id_quantity')
+            const sell_price = document.getElementById('id_sell_price')
+            const paid_amount = document.getElementById('id_paid_amount')
+
+            const alertBox = document.getElementById('alertBox')
+
+            const csrf = document.getElementsByName('csrfmiddlewaretoken')
+
+            const url = ""
+
+            const headAlerts = function(type, text){
+                alertBox.innerHTML = `<div class="alert alert-sm alert-${type} alert-dismissible fade show" role="alert">
+                                        ${text}
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>`
+            }
+
+            const fd = new FormData()
+            fd.append('csrfmiddlewaretoken', csrf[0].value)
+            fd.append('date_added', date.value)
+            fd.append('customer_name', customer_name.value)
+            fd.append('token_number', token_number.value)
+            fd.append('product_name', product_name.value)
+            fd.append('sack', sack.value)
+            fd.append('quantity', quantity.value)
+            fd.append('sell_price', sell_price.value)
+            fd.append('paid_amount', paid_amount.value)
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: fd,
+                success: function(res){
+                    headAlerts('success', res.msg)
+                    setTimeout(() => {
+                        alertBox.innerHTML = ""
+                        //customer_name.value = "" 
+                        //token_number.value = "" 
+                        //product_name.value = "" 
+                        //sack.value = "" 
+                        //quantity.value = "" 
+                        //sell_price.value = "" 
+                        //paid_amount.value = "" 
+                    }, 2000)
+                },
+                error: function(err){
+                    headAlerts('danger', 'Something Went Wrong. Please try again.')
+                    console.log(err)
+                },
+                cache: false,
+                contentType: false,
+                processData: false,
+            })
+        }
+        
+        {% endif %}
+
+    },
+    delimiters: ['[[', ']]']
+}
+
+
+Vue.createApp(createSell).mount('#createSell')
+
+</script>
+
+
+{% endblock script %}

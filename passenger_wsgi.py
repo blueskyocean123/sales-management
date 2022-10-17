@@ -1,0 +1,1 @@
+from ims.wsgi import application

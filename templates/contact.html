@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}| {{ title }}{% endblock title %}
+
+
+{% block body %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow">
+                    <div class="card-header">
+                        <strong class="text-primary">Developer</strong>
+                    </div>
+                    <div class="card-body">
+                        <h4><a href="https://rakibul-islam-raju.netlify.app/" target="_blank">Rakibul Islam</a></h4>
+                        <a href="mailto:rakibul.islam7772588@gmail.com">
+                            <i class="fas fa-envelope text-secondary mr-2"></i> 
+                            rakibul.islam7772588@gmail.com 
+                        </a>
+                        <br>
+                        <i class="fab fa-whatsapp-square text-success mr-3"></i>01718-925923
+                        <br>
+                        <i class="fas fa-phone text-info mr-3"></i>01718-925923
+                        <br>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% comment %} <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card mb-4 shadow">
+                    <div class="card-header">
+                        <strong class="text-primary">Email Us</strong>
+                    </div>
+                    <div class="card-body">
+                        <form action="" method="POST">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                            <div class="buttons-right">
+                                <button type="submit" class="btn btn-primary">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div> {% endcomment %}
+    </div>
+{% endblock body %}

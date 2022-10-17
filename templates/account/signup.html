@@ -1,0 +1,45 @@
+{% extends "./base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Signup" %}{% endblock %}
+
+{% block content %}
+<main>
+    <div class="container">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-lg-6 d-none d-md-block">
+                <img src="{% static 'images/sales-manager.png' %}" class="img-fluid" alt="">
+            </div>
+            <div class="col-lg-6">
+                <div class="card shadow-lg border-0 rounded-lg">
+                    {% include '../includes/messages.html' %}
+                    <div class="card-header">
+                        <h3 class="text-center font-weight-light text-primary">Sales Manager</h3>
+                    </div>
+                    <div class="card-body">
+                        <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                            {% if redirect_field_value %}
+                            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                            {% endif %}
+                            <div class="form-group mt-4 mb-0">
+                                <button class="primaryAction btn btn-primary btn-block" type="submit">{% trans "Sign Up" %}</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer text-center">
+                        <div class="small">{% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+
+{% endblock %}
+

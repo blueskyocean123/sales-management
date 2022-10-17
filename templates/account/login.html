@@ -1,0 +1,76 @@
+{% extends "./base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% load i18n %}
+{% load account socialaccount %}
+
+{% block head_title %}{% trans "Sign In" %}{% endblock %}
+
+{% block content %}
+<main>
+    <div class="container">
+        <div class="row justify-content-center align-items-center mt-5">
+            <div class="col-lg-7 d-none d-md-block">
+                <img src="{% static 'images/sales-manager.jpg' %}" class="img-fluid" alt="">
+            </div>
+            <div class="col-lg-5">
+                <div class="card shadow-lg border-0 rounded-lg">
+                    {% include '../includes/messages.html' %}
+                    <div class="card-header">
+                        <h3 class="text-center font-weight-light text-primary">Sales Manager</h3>
+                        {% get_providers as socialaccount_providers %}
+                    </div>
+                    <div class="card-body">
+                        <p class="text-center text-secondary">
+                            <span class="font-weight-bold ">Username:</span> admin
+                            <span class="font-weight-bold ml-3">Password:</span> admin
+                        </p>
+                        <form class="login {% if date_remaining < 0 %}d-none{% endif %}" method="POST"
+                            action="{% url 'account_login' %}">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                            <div class="form-group d-flex align-items-center justify-content-between mt-4 mb-0">
+                                <a class="button secondaryAction small"
+                                    href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
+                                <button class="primaryAction btn btn-primary"
+                                    type="submit">{% trans "Sign In" %}</button>
+                            </div>
+                        </form>
+
+                        {% if date_remaining < 0 %}
+                        <div class="card text-center shadow-lg my-4">
+                            <div class="card-header bg-info text-white">
+                                Login Expired
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title text-danger">{{expire_msg.message|title}}</h5>
+                                <p>
+                                    <button class="btn btn-info" type="button" data-toggle="collapse"
+                                        data-target="#collapseExample" aria-expanded="false"
+                                        aria-controls="collapseExample">
+                                        Contact Admin
+                                    </button>
+                                </p>
+                                <div class="collapse" id="collapseExample">
+                                    <div class="">
+                                        <b>Phone</b>: 01718925923 <br>
+                                        <b>Email</b>: rakibul.islam7772588@gmail.com
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                    </div>
+                    <div class="card-footer text-center">
+                        <div class="small"><a href="{% url 'account_signup' %}">Need an account? Sign up!</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+
+{% endblock %}

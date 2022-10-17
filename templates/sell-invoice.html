@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell Invoice</title>
+    <link rel="stylesheet" href="{% static 'css/invoice.css' %}">
+    <style>
+        .invoice{
+            margin-left:30px;
+        }
+        table{
+            margin-top:15px; 
+            border: 1px solid #ddd; 
+            padding:5px
+        }
+        td{
+            width: 30%;
+        }
+        hr{
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="float-right" style="text-align:left">
+        <p>
+            <span style="font-size:16px"><strong>{{ sell.added_by.office }}</strong></span><br>
+            {{ sell.added_by.office.email }}<br>
+            {{ sell.added_by.office.phone }}<br>
+            {{ sell.added_by.office.address }}<br>
+        </p>
+        
+    </div>
+
+    <hr>
+    
+    <div style="text-align:right;">
+        <b>Date:</b> {{sell.date_added}} <br>
+    </div>
+    <h2>Payment Invoice:</h2>
+    <div class="invoice">
+        <table style="">
+            <tr>
+                <td><b>Token</b></td>
+                <td>{{ sell.token_number }}</td>
+            </tr>
+            <tr>
+                <td><b>Customer Name</b></td>
+                <td>{{ sell.customer_name }}</td>
+            </tr>
+            <tr>
+                <td><b>Product</b></td>
+                <td>{{ sell.product_name }}</td>
+            </tr>
+            <tr>
+                <td><b>Price</b></td>
+                <td>{{ sell.sell_price }}</td>
+            </tr>
+            <tr>
+                <td><b>Quantity</b></td>
+                <td>{{ sell.sack }}kg * {{sell.quantity}}</td>
+            </tr>
+            <tr>
+                <td><b>Total Price</b></td>
+                <td>{{ sell.get_total_amount }}</td>
+            </tr>
+            <tr>
+                <td><b>Paid</b></td>
+                <td>{{ sell.paid_amount }}</td>
+            </tr>
+            {% if sell.get_due_amount > 0 %}
+            <tr>
+                <td><b>Due</b></td>
+                <td>{{ sell.get_due_amount }}</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+</body>
+</html>

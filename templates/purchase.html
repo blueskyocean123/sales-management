@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}| {{ title|title }}{% endblock title %}
+
+{% block body %}
+
+<div class="container-fluid" id="createPurchase">
+
+    <!-- Content Row -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">{{ title|title }}</h6>
+        </div>
+        <div class="card-body">
+
+            <div class="row justify-content-end mr-2">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                    <i class="fa fa-plus"></i> Supplier
+                </button>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Add New Supplier</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{% url 'supplier-modal' %}" method="POST" >
+                            {% csrf_token %}
+                            {{supplier_form|crispy}}
+
+                            <div class="buttons-right">
+                                <button type="button" class="btn btn-secondary mr-1" data-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <form autocomplete="off" action="" method="POST" @change="calculateTotalPrice()">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            {{ form.date_added|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            {{ form.supplier|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            {{ form.chalan_number|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            {{ form.product_name|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            {% comment %} {{ form.quantity|as_crispy_field }} {% endcomment %}
+                            <label for="id_quantity">{{ form.quantity.label }}*</label>
+                            <input 
+                                type="text"
+                                class="extinput textInput form-control" 
+                                id="id_quantity"
+                                name="quantity"
+                                placeholder="kg"
+                                @keyup="calculateTotalPrice()"
+                                value="{% if form.quantity.value %}{{ form.quantity.value }}{% endif %}"
+                            >
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            {% comment %} {{ form.price|as_crispy_field }} {% endcomment %}
+                            <label for="id_price">{{ form.price.label }}*</label>
+                            <input 
+                                type="text"
+                                class="extinput textInput form-control" 
+                                id="id_price"
+                                name="price"
+                                placeholder="Taka"
+                                @keyup="calculateTotalPrice()"
+                                value="{% if form.price.value %}{{ form.price.value }}{% endif %}"
+                            >
+                            <small v-if="totalAmount">Total: [[ totalAmount ]]</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="buttons-right">
+                    <button class="btn btn-primary mr-1" type="submit">Submit</button>
+                    <a href="{% url 'purchase' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4" id="ajax-search">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Purchase Products</h6>
+        </div>
+        <div class="card-body">
+            <div class="row justify-content-end">
+                <div class="col-lg-4 text-right">
+                    <input @keyup="searchPurchaseProduct()"  id="searchSellProduct" class="form-control mb-3" type="text" placeholder="Search here...">
+                    <div v-if="loading" class="spinner-border text-primary mb-2 loading" role="status">
+                        <span class="visually-hidden"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered" id="" width="100%" cellspacing="0">
+                    <thead>
+                    <tr>
+                        <th>Sl No.</th>
+                        <th>Product</th>
+                        <th>Quantity (kg)</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                        <th>Supplier</th>
+                        <th>Chalan</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="searchTable" v-if="showTable">
+                        {% for purchase in purchases %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ purchase.product_name }}</td>
+                            <td>{{ purchase.quantity }}</td>
+                            <td>{{ purchase.price }}</td>
+                            <td>{{ purchase.total_purchase_price }}</td>
+                            <td>{{ purchase.supplier }}</td>
+                            <td>{{ purchase.chalan_number }}</td>
+                            <td>{{ purchase.date_added }}</td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <a href="{{ purchase.get_update_url }}" class="btn btn-sm btn-outline-primary"><i class="fa fa-edit"></i></a>
+                                    {% if request.user.is_superuser %}
+                                        <a class="btn btn-sm btn-outline-danger" href="#" data-toggle="modal" data-target="#delet{{purchase.id}}">
+                                            <i class="fa fa-trash-alt"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+
+                                <!-- delete Modal-->
+                                <div class="modal fade" id="delet{{purchase.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel">Ready to Delete?</h5>
+                                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">×</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                            Select "Delete" below if you are ready to delete this item.
+                                            <p class="text-danger"><span class="badge badge-danger mr-2">Warning: </span>This action will permanently delete your item.</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <form action="{{ purchase.get_delete_url}}" method="POST">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                    <button class="btn btn-primary" type="button" data-dismiss="modal">Cancel</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                    <tbody id="returnedSearchTable" v-if="searchedData">
+                                <tr v-if="data.length < 1">
+                                    <th colspan="12">No Data Found.</th>
+                                </tr>
+
+                                <tr v-for="(item, index) in data" :key="index">
+                                    <td>[[ index+1 ]]</td>
+                                    <td>[[ item.product_name ]]</td>
+                                    <td>[[ item.quantity ]]</td>
+                                    <td>[[ item.price ]]</td>
+                                    <td>[[ item.price * item.quantity ]]</td>
+                                    <td>[[ supplierData.find(s => s.id === item.supplier_id).name ]]</td>
+                                    <td>[[ item.chalan_number ]]</td>
+                                    <td>[[ item.date_added ]]</td>
+                                    <td>
+                                        <div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+                                            <div class="btn-group" role="group" aria-label="First group">
+                                                <a v-bind:href="'http://' + url + '/purchase/' + item.id + '/'" class="btn btn-sm btn-outline-primary"><i class="fa fa-edit"></i></a>
+
+                                                {% if request.user.is_superuser %}
+                                                <a class="btn btn-sm btn-outline-danger" href="#" data-toggle="modal" v-bind:data-target="'#delete' + item.id">
+                                                    <i class="fa fa-trash-alt"></i>
+                                                </a>
+                                                {% endif %}
+                                            </div>
+
+                                            <!-- delete Modal-->
+                                            <div class="modal fade" v-bind:id="'delete' + item.id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="exampleModalLabel">Ready to Delete?</h5>
+                                                            <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">×</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                        Select "Delete" below if you are ready to delete this item.
+                                                        <p class="text-danger"><span class="badge badge-danger mr-2">Warning: </span>This action will permanently delete your item.</p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <form v-bind:action="'http://' + url + '/purchase/delete/' + item.id + '/'" method="POST">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="btn btn-danger">Delete</button>
+                                                                <button class="btn btn-primary" type="button" data-dismiss="modal">Cancel</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                    
+                </table>
+
+                <div v-if="showPagination">
+                    {% include './includes/pagination.html' %}
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock body %}
+
+{% block script %}
+
+
+<script type="text/javascript">
+
+const createPurchase = {
+    data(){
+        return{
+            totalAmount: '',
+
+            //purchases search
+            searchedData: false,
+            showTable: true,
+            showPagination: true,
+            noData: false,
+            data: [],
+            supplierData: [],
+            url: '',
+            loading: false,
+        }
+    },
+    methods: {
+        calculateTotalPrice(){
+            var quantity = document.getElementById('id_quantity').value
+            var price = document.getElementById('id_price').value
+            if (quantity.length > 0 && quantity > 0 && price.length > 0 && price > 0){
+                total = quantity * price
+                this.totalAmount = total
+            }else{
+                this.totalAmount = '';
+            }
+        },
+
+        // search purchases
+        searchPurchaseProduct(){
+            this.loading = true
+            this.url = window.location.host
+            const searchValue = document.getElementById('searchSellProduct').value
+            if (searchValue.trim().length > 0){
+                fetch("/purchases/search", {
+                    body: JSON.stringify({ searchPurchases: searchValue }),
+                    method: "POST",
+                })
+                .then((res) => res.json())
+                .then((data) => {
+                    this.loading = false
+                    this.showTable = false
+                    this.showPagination = false
+                    this.searchedData = true
+                    if (data.length === 0) {
+                        this.noData = true
+                    }else{
+                        this.data = data.purchases
+                        this.supplierData = data.suppliers
+                    }
+                })
+            }else{
+                this.loading = false
+                this.showTable = true
+                this.showPagination = true
+                this.searchedData = false
+            }
+        }
+    },
+
+
+    delimiters: ['[[', ']]']
+}
+
+
+Vue.createApp(createPurchase).mount('#createPurchase')
+
+</script>
+
+{% endblock script %}

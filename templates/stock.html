@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}| {{ title|title }}{% endblock title %}
+
+{% block body %}
+
+<div class="container-fluid">
+
+    <!-- Content Row -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">{{ title|title }}</h6>
+        </div>
+        <div class="card-body">
+            <form action="" method="POST">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-5">
+                        <div class="form-group">
+                            {{ form.product_name|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="form-group">
+                            {{ form.quantity|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="form-group">
+                            {% comment %} {{ form.sell_price|as_crispy_field }} {% endcomment %}
+                        </div>
+                    </div>
+                </div>
+                <div class="buttons-right">
+                    <button class="btn btn-primary pull-right" type="submit">Submit</button>
+                    <a href="{% url 'stock' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Stocks</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                            <tr>
+                                <th>Sl No.</th>
+                                <th>Product (পণ্য)</th>
+                                <th>Quantity (পরিমাণ)</th>
+                                {% comment %} <th>Sell Price (বিক্রয় মূল্য)</th> {% endcomment %}
+                                <th>Date (তারিখ)</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for stock in stocks %}
+                                <tr {% if stock.quantity <= 0 %}class="text-danger"{% endif %}>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ stock.product_name }}</td>
+                                    <td>{{ stock.quantity }}</td>
+                                    {% comment %} <td>{{ stock.sell_price }}</td> {% endcomment %}
+                                    <td>{{ stock.date_updated|date }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ stock.get_update_url }}" class="btn btn-sm btn-outline-primary"><i class="fa fa-edit"></i></a>
+
+                                            {% if request.user.is_superuser %}
+                                            <a class="btn btn-sm btn-outline-danger" href="#" data-toggle="modal" data-target="#delet{{stock.id}}">
+                                                <i class="fa fa-trash-alt"></i>
+                                            </a>
+                                        </div>
+
+                                        <!-- delete Modal-->
+                                        <div class="modal fade" id="delet{{stock.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="exampleModalLabel">Ready to Delete?</h5>
+                                                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">×</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                    Select "Delete" below if you are ready to delete this item.
+                                                    <p class="text-danger"><span class="badge badge-danger mr-2">Warning: </span>This action will permanently delete your item.</p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <form action="{{ stock.get_delete_url}}" method="POST">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                                            <button class="btn btn-primary" type="button" data-dismiss="modal">Cancel</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {% endif %}
+
+                                        {% if stock.quantity <= 0 %}
+                                        <br>
+                                        <span class="badge badge-danger">Stock Out</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            
+                        </table>
+
+                        {% comment %} {% include './includes/pagination.html' %} {% endcomment %}
+
+                    </div>
+                </div>
+            </div>
+
+</div>
+
+{% endblock body %}
+
+{% block script %}
+{% endblock script %}

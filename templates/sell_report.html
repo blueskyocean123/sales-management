@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}| {{ title|title }}{% endblock title %}
+
+{% block body %}
+
+<div class="container-fluid">
+
+    <!-- Content Row -->
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">{{ title|title }}</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <form action="" method="GET">
+                    <div class="row">
+                        <div class="col-md-4">
+                            {% comment %} {{filter.form.customer_name|as_crispy_field}} {% endcomment %}
+                            <label for="id_customer_name">Customer Name</label>
+                            <input class="form-control" type="text" name="customer_name" id="id_customer_name">
+                        </div>
+                        <div class="col-md-4">
+                            {% comment %} {{filter.form.token_number|as_crispy_field}} {% endcomment %}
+                            <label for="id_token_number">Token</label>
+                            <input class="form-control" type="text" name="token_number" id="id_token_number">
+                        </div>
+                        <div class="col-md-4">
+                            {% comment %} {{sellproductFilter.form.product_name|as_crispy_field}} {% endcomment %}
+                            <label for="id_product_name">Product Name</label>
+                            <input class="form-control" type="text" name="product_name" id="id_product_name">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="id_date_added">Date</label>
+                            <input class="form-control" type="date" name="date_added" id="id_date_added">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="id_start_date">Start Date</label>
+                            <input class="form-control" type="date" name="start_date" id="id_start_date">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="id_end_date">End Date</label>
+                            <input class="form-control" type="date" name="end_date" id="id_end_date">
+                        </div>
+                    </div>
+                    <div class="buttons-right">
+                        <button type="submit" class="btn btn-sm btn-primary mt-1"><i class="fa fa-filter"></i> Filter</button>
+                        <a href="{% url 'sell-report' %}" class="btn btn-sm btn-secondary mt-1">Cancel</a>
+                    </div>
+                </form>
+                
+                <div class="report-parameter mt-5">
+                    <div class="card">
+                        <div class="card-header text-primary">
+                            <h6 class="m-0 font-weight-bold text-primary">Report Parameters</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="filteredBy">
+                            {% if searched_for %}
+                                {% for key, value in searched_for.items %}
+                                    <span class="mr-3"><b>{{key|capfirst}}: </b>{{value}}</span> 
+                                {% endfor %}
+                            {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-summary mt-3">
+                    <div class="card">
+                        <div class="card-header text-primary">
+                            <h6 class="m-0 font-weight-bold text-primary">Report Summary</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row d-flex justify-content-between">
+                                <div class="col-lg-4">
+                                    <table width="100%">
+                                        <tbody>
+                                            <tr>
+                                                <th>Total Sale</th>
+                                                <td>{{ filter.count }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Total Sale Price</th>
+                                                <td>{{ total_sell }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Total Paid</th>
+                                                <td>{{ total_paid }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Total Due</th>
+                                                <td>{{ total_due }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-lg-7 ">
+                                    <table class="table table-bordered" width="100%">
+                                        <tbody>
+                                            <tr>
+                                                <th>Product Sack</th>
+                                                <td>5kg</td>
+                                                <td>35kg</td>
+                                                <td>37kg</td>
+                                                <td>50kg</td>
+                                                <td>55kg</td>
+                                                <td>60kg</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Quantity</th>
+                                                {% for key, value in sack_count.items %}
+                                                <td> {{value}}</td>
+                                                {% endfor %}
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% comment %} <br> {% endcomment %}
+                <br>
+                <button id="downloadReportPDF" class="btn btn-sm btn-primary buttons-right d-inline">Download PDF <i class="fa fa-cloud-download-alt"></i></button>
+                <br>
+                <br>
+                <table class="table table-bordered" id="reportDataTable" width="100%" cellspacing="0" style="font-size: 14px;">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Sack</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                            <th>Paid</th>
+                            <th>Due</th>
+                            <th>Customer</th>
+                            <th>Token</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for obj in filter %}
+                        <tr>
+                            <td>{{ obj.product_name }}</td>
+                            <td>{{ obj.sack }} kg</td>
+                            <td>{{ obj.quantity }}</td>
+                            <td>{{ obj.sell_price }}</td>
+                            <td>{{ obj.get_total_amount }}</td>
+                            <td>{{ obj.paid_amount }}</td>
+                            <td>{{ obj.get_due_amount }}</td>
+                            <td>{{ obj.customer_name }}</td>
+                            <td>{{ obj.token_number }}</td>
+                            <td>{{ obj.date_added|date }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                    <thead>
+                        <tr>
+                            <th colspan="4" class="text-right">Grand Total =</th>
+                            <th>{{ total_sell }}</th>
+                            <th>{{ total_paid }}</th>
+                            <th>{{ total_due }}</th>
+                            <th colspan="3"></th>
+                        </tr>
+                    </thead>
+                    
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock body %}
+
+{% block script %}
+    <script src="{% static 'js/download-report.js' %}"></script>
+{% endblock script %}
